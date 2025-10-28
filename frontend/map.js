@@ -36,7 +36,7 @@ function onLocationError(e) {
 
 /* On double click, it adds a marker to the map */
 function onDoubleClick(e) {
-  referencePos = e.latlng;
+  referencePos = [e.latlng.lat, e.latlng.lng]; 
   if (markerGroup.getLayers().length > 0)
     markerGroup.clearLayers();
 

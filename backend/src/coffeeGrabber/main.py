@@ -15,10 +15,12 @@ def get_coffee_machines():
     if lat is None or lon is None:
         return jsonify({"error": "Missing lat/lon parameters"}), 400
 
+    lat = round(lat, 6)
+    lon = round(lon, 6)
+
     print(f"Backend received request for machines near: lat={lat}, lon={lon}")
 
     overpass_query = f"""
-    [out:json][timeout:25];
     (
       node["amenity"="vending_machine"]["vending"="coffee"](around:{radius},{lat},{lon});
       way["amenity"="vending_machine"]["vending"="coffee"](around:{radius},{lat},{lon});
