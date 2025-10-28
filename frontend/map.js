@@ -3,6 +3,7 @@
 
 /* 
  * During initialization, some stuff happens:
+ * - a global variable called referencePosition is initialized; this will be the variable used to look for the machines from
  * - a map gets initialized
  * - three layers are initialized: map, markers and machines
  * - position is (if possible) located, and the map shows the place the user is in
@@ -10,9 +11,10 @@
 
 // -------------------- Initialization  -----------------------------
 
+var referencePos = [41.90539897953375, 12.51698306704468];
 var map = L.map('map', { 
     doubleClickZoom: false 
-}).setView([51.505, -0.09], 13);
+}).setView(referencePos, 10);
 
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
@@ -34,8 +36,12 @@ function onLocationError(e) {
 
 /* On double click, it adds a marker to the map */
 function onDoubleClick(e) {
-  let position = e.latlng;
-  L.marker(position).addTo(markerGroup);        
+  referencePos = e.latlng;
+  if (markerGroup.getLayers().length > 0)
+    markerGroup.clearLayers();
+
+  L.marker(referencePos).addTo(markerGroup);        
+  fetchCoffeeMachines();
 }
 
 
