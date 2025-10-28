@@ -49,8 +49,10 @@ function onDoubleClick(e) {
 
 /* Retrieves the data from backend and then loops to make them visible */
 async function fetchCoffeeMachines() {
+  machinesGroup.clearLayers();
+
   try {
-    const response = await fetch('/api/coffee-machines');
+    const response = await fetch(`/api/coffee-machines?lat=${referencePos[0]}&lon=${referencePos[1]}`);
     const machines = await response.json();
     machines.forEach(machine => {
       L.marker([machine.lat, machine.lon])
