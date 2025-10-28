@@ -1,0 +1,16 @@
+[project]
+name = "coffee-grabber"
+version = "0.1.0"
+description = "A simple web app to find coffee vending machines in a certain area."
+readme = "README.md"
+requires-python = ">=3.8" 
+
+dependencies = [
+    "OSMPythonTools",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",  
+    "ruff",   
+]
