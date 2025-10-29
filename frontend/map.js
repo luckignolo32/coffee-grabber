@@ -7,19 +7,30 @@
  * - a map gets initialized
  * - three layers are initialized: map, markers and machines
  * - position is (if possible) located, and the map shows the place the user is in
-  */
+*/
 
 // -------------------- Initialization  -----------------------------
 
 var referencePos = [41.90539897953375, 12.51698306704468];
-var map = L.map('map', { 
-    doubleClickZoom: false 
+var map = L.map('map', {
+  doubleClickZoom: false
 }).setView(referencePos, 10);
 
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
   attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
+
+var coffeeIcon = L.icon({
+    iconUrl: 'images/coffee-icon.png',
+
+    iconSize:     [70, 75], 
+    shadowSize:   [50, 64], 
+    iconAnchor:   [38, 84], 
+    shadowAnchor: [4, 62],  
+    popupAnchor:  [-3, -76] 
+});
+
 
 var markerGroup = L.layerGroup().addTo(map);
 var machinesGroup = L.layerGroup().addTo(map);
@@ -36,11 +47,11 @@ function onLocationError(e) {
 
 /* On double click, it adds a marker to the map */
 function onDoubleClick(e) {
-  referencePos = [e.latlng.lat, e.latlng.lng]; 
+  referencePos = [e.latlng.lat, e.latlng.lng];
   if (markerGroup.getLayers().length > 0)
     markerGroup.clearLayers();
 
-  L.marker(referencePos).addTo(markerGroup);        
+  L.marker(referencePos).addTo(markerGroup);
   fetchCoffeeMachines();
 }
 
@@ -55,9 +66,45 @@ async function fetchCoffeeMachines() {
     const response = await fetch(`/api/coffee-machines?lat=${referencePos[0]}&lon=${referencePos[1]}`);
     const machines = await response.json();
     machines.forEach(machine => {
-      L.marker([machine.lat, machine.lon])
+      L.marker([machine.lat, machine.lon], {icon: coffeeIcon})
         .addTo(machinesGroup)
-        .bindPopup(machine.name);
+        .bindPopup(async (layer) => {
+
+          let lat = layer.getLatLng().lat;
+          let lon = layer.getLatLng().lng;
+
+          let popupContent = `<b>${machine.name}</b><br>`;
+          if (machine.tags && machine.tags['payment:cash']) {
+            popupContent += `Cash: ${machine.tags['payment:cash']}<br>`;
+          }
+          popupContent += "<hr><em>Fetching address...</em>";
+
+          try {
+            const addrResponse = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18`);
+            const addrData = await addrResponse.json();
+
+            let finalContent = `<b>${machine.name}</b><br>`;
+
+            if (addrData && addrData.display_name) {
+              finalContent += `${addrData.display_name}<br>`;
+            } else {
+              finalContent += `Address not found.<br>`;
+            }
+
+            if (machine.tags && machine.tags['payment:cash']) {
+              finalContent += `Cash: ${machine.tags['payment:cash']}<br>`;
+            }
+
+            finalContent += `<a href="geo:${lat},${lon}" target="_blank">Open in Maps</a><br>`;
+
+            layer.setPopupContent(finalContent);
+
+          } catch (err) {
+            layer.setPopupContent(`<b>${machine.name}</b><br>Error fetching address.`);
+          }
+
+          return popupContent;
+        });
     });
 
   } catch (error) {

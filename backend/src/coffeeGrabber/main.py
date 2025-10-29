@@ -36,9 +36,12 @@ def get_coffee_machines():
         
         machines_list = []
         assert result is not None 
+
         for element in result.elements():
+            print(element.tags())
             # Get element name from tags, default to "Coffee Machine"
             name = element.tag('name') or "Coffee Machine"
+
             
             # Get coordinates
             if element.type() == 'node':
@@ -63,13 +66,6 @@ def get_coffee_machines():
         return jsonify({"error": "Failed to query OpenStreetMap"}), 500
     
 # -------------------------------------------------------------------
-    # dummy data to test 
-    dummy_data = [
-        {"name": "Machine 1", "lat": 51.505, "lon": -0.09},
-        {"name": "Machine 2", "lat": 51.51, "lon": -0.1},
-        {"name": "Machine 3", "lat": 51.50, "lon": -0.08}
-    ]
-    return jsonify(dummy_data) 
 
 
 # --- Static File Serving: tell Flask to send index.html whenever someone visits the page ---
